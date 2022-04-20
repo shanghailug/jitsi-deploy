@@ -18,3 +18,15 @@ which helm &> /dev/null || \
 sudo -E helm repo add jitsi https://jitsi-contrib.github.io/jitsi-helm/
 sudo -E helm install shlug-jitsi jitsi/jitsi-meet -f values.yml -n jitsi
 
+# traefik set global argument for acme challenge needs.
+#  globalArguments:
+#  - "--global.checknewversion"
+#  - "--global.sendanonymoususage"
+#  - "--providers.kubernetescrd"
+#  - "--certificatesresolvers.myresolver.acme.tlschallenge"
+#  - "--certificatesresolvers.myresolver.acme.email=foo@you.com"
+#  - "--certificatesresolvers.myresolver.acme.storage=acme.json"
+#  Please note that this is the staging Let's Encrypt server.
+#  Once you get things working, you should remove that whole line altogether.
+#  - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+
