@@ -30,3 +30,5 @@ sudo -E helm install shlug-jitsi jitsi/jitsi-meet -f values.yml -n jitsi
 #  Once you get things working, you should remove that whole line altogether.
 #  - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
 
+helm repo add traefik https://helm.traefik.io/traefik
+sudo -E helm upgrade traefik traefik/traefik  --install -n kube-system --reuse-values -f traefik-values.yml

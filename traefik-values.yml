@@ -2,9 +2,72 @@ globalArguments:
   - "--api.insecure"
   - "--accesslog"
   - "--providers.kubernetescrd"
-  - "--certificatesresolvers.shlug.acme.tlschallenge"
+#  - "--certificatesresolvers.shlug.acme.httpchallenge=true"
+#  - "--certificatesresolvers.shlug.acme.httpchallenge.entrypoint=web"
   - "--certificatesresolvers.shlug.acme.email=webmaster@shlug.org"
-  - "--certificatesresolvers.shlug.acme.storage=acme.json"
-  # Please note that this is the staging Let's Encrypt server.
-  # Once you get things working, you should remove that whole line altogether.
+  - "--certificatesresolvers.shlug.acme.storage=/data/acme.json"
   - "--certificatesresolvers.shlug.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+
+# Configure ports
+ports:
+  traefik:
+    port: 9000
+    expose: false
+    # The exposed port for this service
+    exposedPort: 9000
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+  web:
+    port: 8000
+    # hostPort: 8000
+    expose: true
+    exposedPort: 80
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+    # Use nodeport if set. This is useful if you have configured Traefik in a
+    # LoadBalancer
+    nodePort: 30080
+    # Port Redirections
+    # Added in 2.2, you can make permanent redirects via entrypoints.
+    # https://docs.traefik.io/routing/entrypoints/#redirection
+    # redirectTo: websecure
+  websecure:
+    port: 8443
+    # hostPort: 8443
+    expose: true
+    exposedPort: 443
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+    nodePort: 30443
+    # Enable HTTP/3.
+    # Requires enabling experimental http3 feature and tls.
+    # Note that you cannot have a UDP entrypoint with the same port.
+    # http3: true
+    # Set TLS at the entrypoint
+    # https://doc.traefik.io/traefik/routing/entrypoints/#tls
+    tls:
+      enabled: true
+      # this is the name of a TLSOption definition
+      options: ""
+      certResolver: "httpchallenge"
+      domains: 
+        - main: jitsi-test.shlug.org
+
+      # - main: example.com
+      #   sans:
+      #     - foo.example.com
+      #     - bar.example.com
+  metrics:
+    port: 9100
+    # hostPort: 9100
+    # Defines whether the port is exposed if service.type is LoadBalancer or
+    # NodePort.
+    #
+    # You may not want to expose the metrics port on production deployments.
+    # If you want to access it from outside of your cluster,
+    # use `kubectl port-forward` or create a secure ingress
+    expose: false
+    # The exposed port for this service
+    exposedPort: 9100
+    # The port protocol (TCP/UDP)
+    protocol: TCP
