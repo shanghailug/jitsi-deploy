@@ -1,0 +1,10 @@
+globalArguments:
+  - "--api.insecure"
+  - "--accesslog"
+  - "--providers.kubernetescrd"
+  - "--certificatesresolvers.shlug.acme.tlschallenge"
+  - "--certificatesresolvers.shlug.acme.email=webmaster@shlug.org"
+  - "--certificatesresolvers.shlug.acme.storage=acme.json"
+  # Please note that this is the staging Let's Encrypt server.
+  # Once you get things working, you should remove that whole line altogether.
+  - "--certificatesresolvers.shlug.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
