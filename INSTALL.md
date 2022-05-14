@@ -21,25 +21,25 @@ The initial installation needs to be run from command line. But afterwards, Argo
 Run the following shell command by providing the 2 mandatory arguments: fully-qualified domain name for accessing jitsi web, and an email address for receiving Let's Enrypt's ACME mails. 
 
 ```bash
-curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/master/deploy_jitsi.sh | 
+curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/main/deploy_jitsi.sh | 
   bash -s - <PROD_HOSTNAME> <ACME_EMAIL>
 ```
 
 Alternatively, an additional environment variable `ARGOCD_FQDN` can be provided to enable ArgoCD web server's ingress, so that it can be accessed post installation, for future operations: 
 
 ```bash
-curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/master/deploy_jitsi.sh | 
+curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/main/deploy_jitsi.sh | 
   ARGOCD_FQDN=<CD_HOSTNAME> bash -s - <PROD_HOSTNAME> <ACME_EMAIL>
 ```
 
 Before committing to a prod installation, the whole setup can be tested by using a test hostname, only requesting certificates from staging instance of Let's Encrypt, and installing into `test` k8s namespace. This can be done by setting `TEST_INSTALL` and `STAGING_CERT` environment variable and giving test hostname as command argument, like this: 
 
 ```bash
-curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/master/deploy_jitsi.sh | 
+curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/main/deploy_jitsi.sh | 
   TEST_INSTALL=1 STAGING_CERT=1 ARGOCD_FQDN=<CD_HOSTNAME> bash -s - <TEST_HOSTNAME> <ACME_EMAIL>
 ```
 
-The installed applications can then be updated/upgraded by rerunning exactly the same command, when the git repo is updated or it's desirable to enable ArgoCD web after initial installation is done. The already installed components will usually be kept as-is if their versions matche, or be upgraded otherwise. If k3s needs to be upgraded, however, it's probably a better idea to [tear down](#tear-down) the whole setup before-hand. 
+The installed applications can then be updated/upgraded by rerunning exactly the same command, when the git repo is updated or it's desirable to enable ArgoCD web after initial installation is done. The already installed components will usually be kept as-is if their versions match, or be upgraded otherwise. If k3s needs to be upgraded, however, it's probably a better idea to [tear down](#tear-down) the whole setup before-hand. 
 
 ### Install/Upgrade from ArgoCD web UI
 
