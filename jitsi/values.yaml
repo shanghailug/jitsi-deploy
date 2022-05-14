@@ -3,12 +3,17 @@ certResolver: le-staging
 
 fqdn: ""
 
+etherpad:
+  resources: {}
+
 jitsi-meet:
   publicURL: ""
 
   tz: Asia/Shanghai
 
   web:
+    extraEnvs:
+      ETHERPAD_URL_BASE: http://etherpad.meet.jitsi:9001
     ingress:
       enabled: false
 

@@ -195,7 +195,8 @@ function do_app {
     --helm-set fqdn=${FQDN} \
     --helm-set jitsi-meet.publicURL=https://${FQDN} \
     --helm-set jitsi-meet.jvb.publicIP=${PUBLIC_IP} \
-    --helm-set jitsi-meet.jvb.UDPPort=${JVB_PORT}
+    --helm-set jitsi-meet.jvb.UDPPort=${JVB_PORT} \
+    --helm-set jitsi-meet.web.extraEnvs.ETHERPAD_URL_BASE=http://${HELM_NAME}-etherpad.${NAMESPACE}.svc:9001
 
   sleep 5 # there is a race if sync happens too quickly, so that it becomes a partial sync
   argocd app sync ${HELM_NAME}
