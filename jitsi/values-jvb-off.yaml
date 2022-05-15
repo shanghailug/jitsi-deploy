@@ -1,0 +1,5 @@
+jitsi-meet:
+  jvb:
+    replicaCount: 0
+    service:
+      enabled: false

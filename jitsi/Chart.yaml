@@ -1,0 +1,7 @@
+apiVersion: v2
+name: jitsi-deploy
+version: 0.1.0
+dependencies:
+- name: jitsi-meet
+  version: 1.2.2
+  repository: "https://jitsi-contrib.github.io/jitsi-helm"

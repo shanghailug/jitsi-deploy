@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jitsi-web
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`{{ .Values.fqdn }}`)
+      services:
+        - name: {{ .Release.Name }}-jitsi-meet-web
+          port: 80
+  tls:
+    certResolver: {{ .Values.certResolver }}
