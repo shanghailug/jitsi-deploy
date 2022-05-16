@@ -1,0 +1,8 @@
+# See https://github.com/helm/chart-testing#configuration
+remote: origin
+target-branch: main
+chart-dirs:
+  - .
+chart-repos:
+  - jitsi=https://jitsi-contrib.github.io/jitsi-helm
+helm-extra-args: --timeout 600s

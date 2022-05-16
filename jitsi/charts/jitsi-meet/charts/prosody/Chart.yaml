@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 0.11.13
+description: A Helm chart for Kubernetes
+name: prosody
+type: application
+version: 1.2.2

@@ -1,4 +1,4 @@
-
+---
 certResolver: le-staging
 
 fqdn: ""
@@ -29,7 +29,6 @@ jitsi-meet:
     service:
       # enabled: true
       type: NodePort
-    # It may be required to change the default port to a value allowed by Kubernetes (30000-32768)
     UDPPort: 30000
 
     livenessProbe:
@@ -42,5 +41,4 @@ jitsi-meet:
     websockets:
       enabled: true
 
-    # Use public IP of one of your node, or the public IP of a loadbalancer in front of the nodes
     publicIP: ""
