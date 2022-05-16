@@ -1,6 +1,6 @@
 dependencies:
 - name: jitsi-meet
-  repository: https://jitsi-contrib.github.io/jitsi-helm
+  repository: ""
   version: 1.2.2
-digest: sha256:165664c1a23bc9760177e63740a861360eee007b432d9044ea449e77fba95d94
-generated: "2022-05-02T17:15:02.132446+08:00"
+digest: sha256:f27d02481ecd087ba8c56aa5e8f76e97f177ff8488a17b016e4bc1c54c253f23
+generated: "2022-05-20T21:45:04.926228+08:00"
