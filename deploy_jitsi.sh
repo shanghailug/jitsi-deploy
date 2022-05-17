@@ -122,14 +122,11 @@ function do_argocd {
   cd ${SRC_DIR}/
 
   kubectl create ns argocd --dry-run=client -o yaml | kubectl apply -f -
-  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-  if [ -n "${ARGOCD_FQDN}" ]; then
-    export ARGOCD_FQDN
-    kubectl apply -f argocd/cmd-params-cm.yaml
-    kubectl -n argocd rollout restart deploy/argocd-server
-    argocd/ingressroute-server.yaml.sh | kubectl apply -f -
-    # ARGOCD_PASSWD=$(kubectl -n argocd get secret/argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d)
-  fi
+  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/install.yaml
+  kubectl apply -f argocd/cmd-params-cm.yaml
+  kubectl -n argocd rollout restart deploy/argocd-server
+  argocd/ingressroute-server.yaml.sh | kubectl apply -f -
+  # ARGOCD_PASSWD=$(kubectl -n argocd get secret/argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d)
 
   echo -n "waiting for argocd to become ready ."
   while [ $(kubectl -n argocd get pods | grep -c '1/1') -ne 7 ]; do
