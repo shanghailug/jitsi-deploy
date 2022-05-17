@@ -9,18 +9,16 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(\`${ARGOCD_FQDN}\`)
-      priority: 10
+      match: Host(\`${FQDN}\`) && PathPrefix(\`/argocd\`)
       services:
         - name: argocd-server
           port: 80
     - kind: Rule
-      match: Host(\`${ARGOCD_FQDN}\`) && Headers(\`Content-Type\`, \`application/grpc\`)
-      priority: 11
+      match: Host(\`${FQDN}\`) && PathPrefix(\`/argocd\`) && Headers(\`Content-Type\`, \`application/grpc\`)
       services:
         - name: argocd-server
           port: 80
           scheme: h2c
   tls:
-    certResolver: le-prod
+    certResolver: ${CERT_RESOLVER}
 EOF

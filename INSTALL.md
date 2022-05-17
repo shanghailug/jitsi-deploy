@@ -25,18 +25,11 @@ curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/main/deploy_
   bash -s - <PROD_HOSTNAME> <ACME_EMAIL>
 ```
 
-Alternatively, an additional environment variable `ARGOCD_FQDN` can be provided to enable ArgoCD web server's ingress, so that it can be accessed post installation, for future operations: 
-
-```bash
-curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/main/deploy_jitsi.sh | 
-  ARGOCD_FQDN=<CD_HOSTNAME> bash -s - <PROD_HOSTNAME> <ACME_EMAIL>
-```
-
 Before committing to a prod installation, the whole setup can be tested by using a test hostname, only requesting certificates from staging instance of Let's Encrypt, and installing into `test` k8s namespace. This can be done by setting `TEST_INSTALL` and `STAGING_CERT` environment variable and giving test hostname as command argument, like this: 
 
 ```bash
 curl -sL https://raw.githubusercontent.com/shanghailug/jitsi-deploy/main/deploy_jitsi.sh | 
-  TEST_INSTALL=1 STAGING_CERT=1 ARGOCD_FQDN=<CD_HOSTNAME> bash -s - <TEST_HOSTNAME> <ACME_EMAIL>
+  TEST_INSTALL=1 STAGING_CERT=1 bash -s - <TEST_HOSTNAME> <ACME_EMAIL>
 ```
 
 The installed applications can then be updated/upgraded by rerunning exactly the same command, when the git repo is updated or it's desirable to enable ArgoCD web after initial installation is done. The already installed components will usually be kept as-is if their versions match, or be upgraded otherwise. If k3s needs to be upgraded, however, it's probably a better idea to [tear down](#tear-down) the whole setup before-hand. 
@@ -56,7 +49,6 @@ The following list of environment variables can be used to customize or alter th
 
 Environment Variable | Description | Default Value | Default behaviour
 --- | --- | --- | ---
-`ARGOCD_FQDN` | fully-qualified hostname for accessing ArgoCD web UI | "" | don't enable web ingress for ArgoCD server
 `ARGOCD_VERSION` | argocd release to install | "v2.3.3" | 
 `DEPLOY_GIT_REPO` | the git repo url for retrieving artifacts | `https://github.com/shanghailug/jitsi-deploy.git` |
 `DEPLOY_GIT_VERSION` | the revision of artifacts to checkout and use from the repo | "" | use the default branch when git repo is cloned locally
