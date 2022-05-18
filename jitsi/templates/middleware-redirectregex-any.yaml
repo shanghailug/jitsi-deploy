@@ -1,0 +1,8 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: any-redirectregex
+spec:
+  redirectRegex:
+    regex: ^http://[^/]+/(.*)
+    replacement: https://{{ .Values.fqdn }}/${1}
