@@ -21,8 +21,8 @@ spec:
     ports:
       # traefik:
       #   expose: true
-      web:
-        redirectTo: websecure
+      # web:
+      #   redirectTo: websecure
       xmpp-prod:
         port: 5222
         expose: true
