@@ -17,6 +17,9 @@ data:
   ENABLE_RECORDING: "true"
   ENABLE_FILE_RECORDING_SERVICE_SHARING: "true"
   {{- end }}
+  {{- if .Values.etherpad.enabled}}
+  ETHERPAD_URL_BASE: 'http://{{ include "jitsi-meet.etherpad.fullname" . }}.{{ .Release.Namespace }}.svc:9001'  
+  {{- end }}
   {{- range $key, $value := .Values.web.extraEnvs }}
   {{- if not (kindIs "invalid" $value) }}
   {{ $key }}: {{ tpl $value $ | quote }}

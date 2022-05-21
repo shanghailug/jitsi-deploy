@@ -1,0 +1,48 @@
+{{- if .Values.etherpad.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jitsi-meet.etherpad.fullname" . }}
+  labels:
+    {{- include "jitsi-meet.etherpad.labels" . | nindent 4 }}
+  {{- with .Values.etherpad.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "jitsi-meet.etherpad.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "jitsi-meet.etherpad.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "jitsi-meet.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.etherpad.securityContext | nindent 12 }}
+          image: "{{ .Values.etherpad.image.repository }}:{{ .Values.etherpad.image.tag }}"
+          imagePullPolicy: {{ pluck "pullPolicy" .Values.etherpad.image .Values.image | first }}
+          ports:
+          - name: http
+            containerPort: 9001
+            protocol: TCP
+          {{- with .Values.etherpad.livenessProbe }}
+          livenessProbe:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.etherpad.readinessProbe }}
+          readinessProbe:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          resources:
+            {{- toYaml .Values.etherpad.resources | nindent 12 }}
+{{- end }}
