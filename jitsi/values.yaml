@@ -13,7 +13,7 @@ jitsi-meet:
 
   web:
     extraEnvs:
-      ETHERPAD_URL_BASE:
+      ETHERPAD_URL_BASE: ""
     ingress:
       enabled: false
 

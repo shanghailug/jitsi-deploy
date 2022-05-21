@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: etherpad
-          image: "etherpad/etherpad:1.8.6"
+          image: "etherpad/etherpad:1.8.18"
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
