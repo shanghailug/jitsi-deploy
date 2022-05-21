@@ -12,8 +12,6 @@ jitsi-meet:
   tz: Asia/Shanghai
 
   web:
-    extraEnvs:
-      ETHERPAD_URL_BASE: ""
     ingress:
       enabled: false
 
@@ -27,7 +25,6 @@ jitsi-meet:
 
   jvb:
     service:
-      # enabled: true
       type: NodePort
     UDPPort: 30000
 
@@ -42,3 +39,6 @@ jitsi-meet:
       enabled: true
 
     publicIP: ""
+
+  etherpad:
+    enabled: true

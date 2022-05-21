@@ -252,6 +252,24 @@ jibri:
 
   extraEnvs: {}
 
+etherpad:
+  enabled: false
+
+  image:
+    repository: etherpad/etherpad
+    tag: 1.8.18
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 9001
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 9001
+
+  resources: {}
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true

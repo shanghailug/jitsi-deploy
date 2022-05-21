@@ -3,9 +3,8 @@ appVersion: stable-7287
 dependencies:
 - condition: prosody.enabled
   name: prosody
-  repository: ""
   version: 1.2.2
 description: A Helm chart for Kubernetes
 name: jitsi-meet
 type: application
-version: 1.2.2
+version: "1.2.2+etherpad.1"

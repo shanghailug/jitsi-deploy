@@ -1,6 +1,6 @@
 dependencies:
 - name: jitsi-meet
   repository: ""
-  version: 1.2.2
-digest: sha256:f27d02481ecd087ba8c56aa5e8f76e97f177ff8488a17b016e4bc1c54c253f23
-generated: "2022-05-20T21:45:04.926228+08:00"
+  version: 1.2.2+etherpad.1
+digest: sha256:8ef0f113e499152fd5b0a2861d93713bdd3e9e4ea0e57b7be2992a7947e748ff
+generated: "2022-05-22T10:40:05.978749+08:00"
