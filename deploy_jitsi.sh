@@ -43,7 +43,7 @@ fi
 
 # versions
 K3S_VERSION=${K3S_VERSION:-"v1.23.6+k3s1"}
-HELM_VERSION=${HELM_VERSION:-"v3.8.2"}
+HELM_VERSION=${HELM_VERSION:-"v3.9.0"}
 ARGOCD_VERSION=${ARGOCD_VERSION:-"v2.3.3"}
 HELM_ARCHIVE="helm-${HELM_VERSION}-linux-amd64.tar.gz"
 DEPLOY_GIT_REPO=${DEPLOY_GIT_REPO:-"https://github.com/shanghailug/jitsi-deploy.git"}
