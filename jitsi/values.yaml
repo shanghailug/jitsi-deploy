@@ -4,7 +4,10 @@ certResolver: le-staging
 fqdn: ""
 
 etherpad:
-  resources: {}
+  scheduled: false
+  schedules:
+    start: ""
+    stop: ""
 
 jitsi-meet:
   publicURL: ""
@@ -42,3 +45,4 @@ jitsi-meet:
 
   etherpad:
     enabled: true
+    replicaCount: 1
