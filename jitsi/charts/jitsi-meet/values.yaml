@@ -254,6 +254,7 @@ jibri:
 
 etherpad:
   enabled: false
+  replicaCount: 1
 
   image:
     repository: etherpad/etherpad

@@ -1,0 +1,54 @@
+{{- if .Values.etherpad.scheduled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-start-etherpad
+spec:
+  schedule: {{ .Values.etherpad.schedules.start }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: kubectl
+            image: bitnami/kubectl:1.23
+            imagePullPolicy: IfNotPresent
+            args:
+              - -n
+              - {{ .Release.Namespace }}
+              - scale
+              - deployment
+              - {{ .Release.Name }}-jitsi-meet-etherpad
+              - --replicas=1
+          serviceAccountName: {{ .Release.Name }}-etherpad-startstop-account
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-stop-etherpad
+spec:
+  schedule: {{ .Values.etherpad.schedules.stop }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: kubectl
+            image: bitnami/kubectl:1.23
+            imagePullPolicy: IfNotPresent
+            args:
+              - -n
+              - {{ .Release.Namespace }}
+              - scale
+              - deployment
+              - {{ .Release.Name }}-jitsi-meet-etherpad
+              - --replicas=0
+          serviceAccountName: {{ .Release.Name }}-etherpad-startstop-account
+{{- end }}

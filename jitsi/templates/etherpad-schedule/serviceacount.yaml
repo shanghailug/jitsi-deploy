@@ -1,0 +1,7 @@
+{{- if .Values.etherpad.scheduled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}-etherpad-startstop-account
+{{- end }}
