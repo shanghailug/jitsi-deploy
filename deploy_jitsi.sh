@@ -21,12 +21,23 @@ apt update && apt -y install grep bind9-dnsutils iproute2 curl wget git
 # parameters
 export FQDN=$1
 export ACME_EMAIL=$2
-export PUBLIC_IP=$(nslookup ${FQDN} | grep -A1 Name: | grep Address: | cut -d' ' -f2)
-if [ -z "${PUBLIC_IP}" ]; then
-  err "can't resolve hostname: ${FQDN}"
+
+if [[ "${FQDN}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  export PUBLIC_IP=${FQDN}
+  export FQDN=""
+  if [ -z "${TLS_CERT}" ] || [ -z "${TLS_KEY}" ];
+    err "both of 'TLS_CERT' and 'TLS_KEY' envvars should be specified when deploying without domain name"
+  fi
 else
-  echo "resolved hostname '${FQDN}' to ip address ${PUBLIC_IP}"
+  export PUBLIC_IP=$(nslookup ${FQDN} | grep -A1 Name: | grep Address: | cut -d' ' -f2)
 fi
+
+if [ -z "${PUBLIC_IP}" ]; then
+  err "can't resolve hostname: ${1}"
+else
+  echo "resolved hostname '${1}' to ip address ${PUBLIC_IP}"
+fi
+
 if ! (curl -s https://ipinfo.io/ip | grep -q ${PUBLIC_IP}); then
   err "the host doesn't have such public ip: ${PUBLIC_IP}"
 fi
@@ -116,6 +127,14 @@ function do_traefik {
   done
   echo "ready."
   kubectl -n kube-system get job -o wide
+
+  if [ -n "${TLS_CERT}" ] && [ -n "${TLS_KEY}" ]; then
+    if kubectl -n default get secret | grep -q tls-secret; then
+      kubectl -n default delete secret tls-secret
+    fi
+    kubectl -n default create secret tls tls-secret --cert ${TLS_CERT} --key ${TLS_KEY}
+    kubectl apply -f tlsstore.yaml
+  fi
 }
 
 function do_argocd {
@@ -154,8 +173,8 @@ function do_chart {
     -f values.yaml \
     $EXCLUDE_JVB_VALUES_FILE \
     --set certResolver=${CERT_RESOLVER} \
-    --set fqdn=${FQDN} \
-    --set jitsi-meet.publicURL=https://${FQDN} \
+    --set fqdn="${FQDN}" \
+    --set jitsi-meet.publicURL=https://${FQDN:-${PUBLIC_IP}} \
     --set jitsi-meet.jvb.publicIP=${PUBLIC_IP} \
     --set jitsi-meet.jvb.UDPPort=${JVB_PORT}
 }
@@ -192,8 +211,8 @@ function do_app {
     --values values.yaml \
     ${EXCLUDE_JVB_VALUES_FILE} \
     --helm-set certResolver=${CERT_RESOLVER} \
-    --helm-set fqdn=${FQDN} \
-    --helm-set jitsi-meet.publicURL=https://${FQDN} \
+    --helm-set fqdn="${FQDN}" \
+    --helm-set jitsi-meet.publicURL=https://${FQDN:-${PUBLIC_IP}} \
     --helm-set jitsi-meet.jvb.publicIP=${PUBLIC_IP} \
     --helm-set jitsi-meet.jvb.UDPPort=${JVB_PORT}
 
