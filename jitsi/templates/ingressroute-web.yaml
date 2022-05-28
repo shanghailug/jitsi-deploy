@@ -1,16 +1,38 @@
+{{- $hostname := default (index .Values "jitsi-meet" "jvb" "publicIP") .Values.fqdn }}
+---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: jitsi-web
-  namespace: {{ .Release.Namespace }}
+  name: jitsi-websecure
 spec:
   entryPoints:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`{{ .Values.fqdn }}`)
+      match: Host(`{{ $hostname }}`) && PathPrefix(`/`)
       services:
         - name: {{ .Release.Name }}-jitsi-meet-web
           port: 80
+  {{- if .Values.fqdn }}
   tls:
     certResolver: {{ .Values.certResolver }}
+  {{- else }}
+  tls: {}
+  {{- end }}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jitsi-web
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`{{ $hostname }}`) && PathPrefix(`/`)
+      middlewares:
+        - name: jitsi-web-redirectscheme
+      services:
+        - name: {{ .Release.Name }}-jitsi-meet-web
+          port: 80
