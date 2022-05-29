@@ -25,7 +25,7 @@ export ACME_EMAIL=$2
 if [[ "${FQDN}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   export PUBLIC_IP=${FQDN}
   export FQDN=""
-  if [ -z "${TLS_CERT}" ] || [ -z "${TLS_KEY}" ];
+  if [ -z "${TLS_CERT}" ] || [ -z "${TLS_KEY}" ]; then
     err "both of 'TLS_CERT' and 'TLS_KEY' envvars should be specified when deploying without domain name"
   fi
 else
