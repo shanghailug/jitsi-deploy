@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function err {
-    echo $1 1>&2
+    echo -e $1 1>&2
     exit 1
 }
 
@@ -29,7 +29,7 @@ if [[ "${FQDN}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     err "both of 'TLS_CERT' and 'TLS_KEY' envvars should be specified when deploying without domain name"
   fi
 else
-  export PUBLIC_IP=$(nslookup ${FQDN} | grep -A1 Name: | grep Address: | cut -d' ' -f2)
+  export PUBLIC_IP=$(nslookup ${FQDN} | grep -A1 Name: | grep Address: | cut -d' ' -f2 | grep -v ':' | head -1)
 fi
 
 if [ -z "${PUBLIC_IP}" ]; then
@@ -38,8 +38,8 @@ else
   echo "resolved hostname '${1}' to ip address ${PUBLIC_IP}"
 fi
 
-if ! (curl -s https://ipinfo.io/ip | grep -q ${PUBLIC_IP}); then
-  err "the host doesn't have such public ip: ${PUBLIC_IP}"
+if [ ${FQDN} != "localhost" ] && ! (curl -s https://ipinfo.io/ip | grep -q ${PUBLIC_IP}); then
+  err "the host doesn't have such public ip: ${PUBLIC_IP}, but these: \n$(curl -s https://ipinfo.io/ip)"
 fi
 
 if [ -n "${TEST_INSTALL}" ]; then
@@ -61,24 +61,30 @@ DEPLOY_GIT_REPO=${DEPLOY_GIT_REPO:-"https://github.com/shanghailug/jitsi-deploy.
 
 # workspace
 WS_DIR=${HOME}/deploy/$(date +"%Y%m%d_%H%M%S")
-SRC_DIR=${WS_DIR}/jitsi-deploy
+if [ -n "${RUN_IN_CI}" ]; then
+  SRC_DIR=${PWD}
+else
+  SRC_DIR=${WS_DIR}/jitsi-deploy
+fi
 mkdir -p ${WS_DIR}
 
 function get_helm {
   if ! which helm || ! ( helm version | grep -q ${HELM_VERSION} ); then
     cd ${WS_DIR}/
-    wget https://get.helm.sh/${HELM_ARCHIVE}
+    wget -nv https://get.helm.sh/${HELM_ARCHIVE}
     tar -zxvf ${HELM_ARCHIVE}
     mv $(find -type f -name helm) /usr/local/bin/
   fi
 }
 
 function get_src {
-  cd ${WS_DIR}/
-  git clone ${DEPLOY_GIT_REPO}
-  cd $SRC_DIR/
-  if [ -n "${DEPLOY_GIT_VERSION}" ]; then
-    git checkout ${DEPLOY_GIT_VERSION}
+  if [ -z "${RUN_IN_CI}" ]; then
+    cd ${WS_DIR}/
+    git clone ${DEPLOY_GIT_REPO}
+    cd $SRC_DIR/
+    if [ -n "${DEPLOY_GIT_VERSION}" ]; then
+      git checkout ${DEPLOY_GIT_VERSION}
+    fi
   fi
 }
 
@@ -110,7 +116,7 @@ function do_k3s {
 function get_argocd {
   if ! which argocd || ! (argocd -n argocd version --client | grep ^argocd: | grep -q ${ARGOCD_VERSION}); then
     cd ${WS_DIR}/
-    wget https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64
+    wget -nv https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64
     chmod a+x argocd-linux-amd64
     mv argocd-linux-amd64 /usr/local/bin/argocd
   fi

@@ -3,6 +3,32 @@ name: Lint and Test Charts
 on: pull_request
 
 jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Run It
+        run: |
+          sudo rm $(which kubectl)
+          sudo RUN_IN_CI=1 TLS_CERT=test/localhost.crt TLS_KEY=test/localhost.key ./deploy_jitsi.sh localhost test@localhost.local
+      
+      - name: Wait for pods
+        run: |
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/name=prosody --for condition=Ready --timeout=90s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=web --for condition=Ready --timeout=90s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=jicofo --for condition=Ready --timeout=180s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=etherpad --for condition=Ready --timeout=180s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=jvb --for condition=Ready --timeout=300s
+
+      - name: Check homepage
+        run: |
+          curl -vIL --cacert test/rootca.crt https://localhost
+
+      - name: Tear down
+        run: sudo /usr/local/bin/k3s-uninstall.sh
+
   lint-test:
     runs-on: ubuntu-latest
     steps:
