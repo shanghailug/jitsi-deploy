@@ -49,7 +49,7 @@ The following list of environment variables can be used to customize or alter th
 
 Environment Variable | Description | Default Value | Default behaviour
 --- | --- | --- | ---
-`ARGOCD_VERSION` | argocd release to install | "v2.3.4" | 
+`ARGOCD_VERSION` | argocd release to install | "v2.4.2" | 
 `DEPLOY_GIT_REPO` | the git repo url for retrieving artifacts | `https://github.com/shanghailug/jitsi-deploy.git` |
 `DEPLOY_GIT_VERSION` | the revision of artifacts to checkout and use from the repo | "" | use the default branch when git repo is cloned locally
 `EXCLUDE_JVB` | Exclude built-in jvb component (so that an external one can be registered for use) | "" | include jvb
