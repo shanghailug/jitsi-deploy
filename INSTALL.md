@@ -53,7 +53,7 @@ Environment Variable | Description | Default Value | Default behaviour
 `DEPLOY_GIT_REPO` | the git repo url for retrieving artifacts | `https://github.com/shanghailug/jitsi-deploy.git` |
 `DEPLOY_GIT_VERSION` | the revision of artifacts to checkout and use from the repo | "" | use the default branch when git repo is cloned locally
 `EXCLUDE_JVB` | Exclude built-in jvb component (so that an external one can be registered for use) | "" | include jvb
-`K3S_VERSION` | k3s release to install | "v1.23.6+k3s1" | 
+`K3S_VERSION` | k3s release to install | "v1.24.1+k3s1" | 
 `TEST_INSTALL` | when set to non-empty, install an app called `jitsitest` into `test` k8s namespace | "" | install an app called `jitsi` into `prod` k8s namespace
 
 

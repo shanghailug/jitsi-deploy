@@ -65,7 +65,7 @@ jobs:
       - name: Create k3s cluster
         uses: debianmaster/actions-k3s@master
         with:
-          version: 'v1.23.6-k3s1'
+          version: 'v1.24.1+k3s1'
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Wait for traefik
