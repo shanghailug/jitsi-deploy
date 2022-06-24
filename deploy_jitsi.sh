@@ -6,8 +6,8 @@ function err {
 }
 
 # check usage
-if [ $# -ne 2 ]; then
-  err "usage: $0 <fully-qualified-host-name> <acme_email_address>"
+if [ $# -ne 1 ] && [ $# -ne 2 ]; then
+  err "usage: $0 <fully-qualified-host-name> [<acme_email_address>]"
 fi
 
 # check sudo
@@ -21,6 +21,20 @@ apt update && apt -y install grep bind9-dnsutils iproute2 curl wget git
 # parameters
 export FQDN=$1
 export ACME_EMAIL=$2
+
+if [ -n "${TLS_CERT}" ] && [ -n "${TLS_KEY}" ]; then
+  CERT_RESOLVER=""
+else
+  if [ -z "${ACME_EMAIL}" ]; then
+    err "<acme_email_address> is required if no TLS cert is provided in TLS_CERT and TLS_KEY envvars"
+  fi
+  if [ -n "${STAGING_CERT}" ]; then
+    CERT_RESOLVER="le-staging"
+  else
+    CERT_RESOLVER="le-prod"
+  fi
+fi
+export CERT_RESOLVER
 
 if [[ "${FQDN}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   export PUBLIC_IP=${FQDN}
@@ -42,6 +56,14 @@ if [ ${FQDN} != "localhost" ] && ! (curl -s https://ipinfo.io/ip | grep -q ${PUB
   err "the host doesn't have such public ip: ${PUBLIC_IP}, but these: \n$(curl -s https://ipinfo.io/ip)"
 fi
 
+if [ -z "${PORT}" ]; then
+  export PUBLIC_PORT=443
+  export PUBLIC_URL="https://${FQDN:-${PUBLIC_IP}}"
+else
+  export PUBLIC_PORT=${PORT}
+  export PUBLIC_URL="https://${FQDN:-${PUBLIC_IP}}:${PUBLIC_PORT}"
+fi
+
 if [ -n "${TEST_INSTALL}" ]; then
   export HELM_NAME=jitsitest
   export NAMESPACE=test
@@ -61,11 +83,7 @@ DEPLOY_GIT_REPO=${DEPLOY_GIT_REPO:-"https://github.com/shanghailug/jitsi-deploy.
 
 # workspace
 WS_DIR=${HOME}/deploy/$(date +"%Y%m%d_%H%M%S")
-if [ -n "${RUN_IN_CI}" ]; then
-  SRC_DIR=${PWD}
-else
-  SRC_DIR=${WS_DIR}/jitsi-deploy
-fi
+SRC_DIR=${WS_DIR}/jitsi-deploy
 mkdir -p ${WS_DIR}
 
 function get_helm {
@@ -78,13 +96,11 @@ function get_helm {
 }
 
 function get_src {
-  if [ -z "${RUN_IN_CI}" ]; then
-    cd ${WS_DIR}/
-    git clone ${DEPLOY_GIT_REPO}
-    cd $SRC_DIR/
-    if [ -n "${DEPLOY_GIT_VERSION}" ]; then
-      git checkout ${DEPLOY_GIT_VERSION}
-    fi
+  cd ${WS_DIR}/
+  git clone ${DEPLOY_GIT_REPO}
+  cd $SRC_DIR/
+  if [ -n "${DEPLOY_GIT_VERSION}" ]; then
+    git checkout ${DEPLOY_GIT_VERSION}
   fi
 }
 
@@ -169,18 +185,13 @@ function do_chart {
     EXCLUDE_JVB_VALUES_FILE="-f values-jvb-off.yaml"
   fi
 
-  if [ -n "${STAGING_CERT}" ]; then
-    CERT_RESOLVER="le-staging"
-  else
-    CERT_RESOLVER="le-prod"
-  fi
-
   helm -n ${NAMESPACE} upgrade -i --create-namespace ${HELM_NAME} . \
     -f values.yaml \
     $EXCLUDE_JVB_VALUES_FILE \
     --set certResolver=${CERT_RESOLVER} \
     --set fqdn="${FQDN}" \
-    --set jitsi-meet.publicURL=https://${FQDN:-${PUBLIC_IP}} \
+    --set port=${PUBLIC_PORT} \
+    --set jitsi-meet.publicURL="${PUBLIC_URL}" \
     --set jitsi-meet.jvb.publicIP=${PUBLIC_IP} \
     --set jitsi-meet.jvb.UDPPort=${JVB_PORT}
 }
@@ -194,12 +205,6 @@ function do_app {
 
   if [ -n "${EXCLUDE_JVB}" ]; then
     EXCLUDE_JVB_VALUES_FILE="--values values-jvb-off.yaml"
-  fi
-
-  if [ -n "${STAGING_CERT}" ]; then
-    CERT_RESOLVER="le-staging"
-  else
-    CERT_RESOLVER="le-prod"
   fi
 
   argocd login --core
@@ -218,7 +223,8 @@ function do_app {
     ${EXCLUDE_JVB_VALUES_FILE} \
     --helm-set certResolver=${CERT_RESOLVER} \
     --helm-set fqdn="${FQDN}" \
-    --helm-set jitsi-meet.publicURL=https://${FQDN:-${PUBLIC_IP}} \
+    --helm-set port=${PUBLIC_PORT} \
+    --helm-set jitsi-meet.publicURL="${PUBLIC_URL}" \
     --helm-set jitsi-meet.jvb.publicIP=${PUBLIC_IP} \
     --helm-set jitsi-meet.jvb.UDPPort=${JVB_PORT}
 

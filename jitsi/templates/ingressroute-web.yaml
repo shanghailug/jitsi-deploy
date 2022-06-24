@@ -6,20 +6,25 @@ metadata:
   name: jitsi-websecure
 spec:
   entryPoints:
+    {{- if eq (int .Values.port) 443 }}
     - websecure
+    {{- else }}
+    - jitsi-meet
+    {{- end }}
   routes:
     - kind: Rule
       match: Host(`{{ $hostname }}`) && PathPrefix(`/`)
       services:
         - name: {{ .Release.Name }}-jitsi-meet-web
           port: 80
-  {{- if .Values.fqdn }}
+  {{- if .Values.certResolver }}
   tls:
     certResolver: {{ .Values.certResolver }}
   {{- else }}
   tls: {}
   {{- end }}
 
+{{- if eq (int .Values.port) 443 }}
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -36,3 +41,4 @@ spec:
       services:
         - name: {{ .Release.Name }}-jitsi-meet-web
           port: 80
+{{- end }}

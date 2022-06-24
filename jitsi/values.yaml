@@ -3,6 +3,8 @@ certResolver: le-staging
 
 fqdn: ""
 
+port: 443
+
 etherpad:
   scheduled: false
   schedules:
