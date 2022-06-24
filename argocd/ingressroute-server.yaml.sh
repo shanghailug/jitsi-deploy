@@ -1,9 +1,13 @@
 if [ -n "${FQDN}" ]; then
   HOST_RULE="Host(\`${FQDN}\`)"
-  TLS_CERT_RESOLVER="certResolver: ${CERT_RESOLVER}"
 else
   HOST_RULE="Host(\`${PUBLIC_IP}\`)"
-  TLS_MAP="{}"
+fi
+
+if [ ${PUBLIC_PORT} -eq 443 ]; then
+  ENTRYPOINT=websecure
+else
+  ENTRYPOINT=jitsi-meet
 fi
 
 cat <<EOF
@@ -14,7 +18,7 @@ metadata:
   namespace: argocd
 spec:
   entryPoints:
-    - websecure
+    - ${ENTRYPOINT}
   routes:
     - kind: Rule
       match: ${HOST_RULE} && PathPrefix(\`/argocd\`)
@@ -27,6 +31,14 @@ spec:
         - name: argocd-server
           port: 80
           scheme: h2c
-  tls: ${TLS_MAP}
-    ${TLS_CERT_RESOLVER}
 EOF
+if [ -n "${CERT_RESOLVER}" ]; then
+  cat <<EOF
+  tls:
+    certResolver: ${CERT_RESOLVER}
+EOF
+else
+  cat <<EOF
+  tls: {}
+EOF
+fi

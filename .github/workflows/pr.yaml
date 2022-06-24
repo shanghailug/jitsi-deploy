@@ -6,13 +6,76 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     steps:
+      - name: Print the GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Checkout
         uses: actions/checkout@v3
-      
-      - name: Run It
+
+      - name: Remove built-in kubectl
         run: |
           sudo rm $(which kubectl)
-          sudo RUN_IN_CI=1 TLS_CERT=test/localhost.crt TLS_KEY=test/localhost.key ./deploy_jitsi.sh localhost test@localhost.local
+      
+      - name: Install
+        run: |
+          sudo \
+            DEPLOY_GIT_REPO=${{github.event.pull_request.head.repo.clone_url}} \
+            DEPLOY_GIT_VERSION=${{github.head_ref}} \
+            TLS_CERT=test/localhost.crt \
+            TLS_KEY=test/localhost.key \
+            ./deploy_jitsi.sh localhost
+
+      - name: Wait for pods
+        run: |
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/name=prosody --for condition=Ready --timeout=90s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=web --for condition=Ready --timeout=90s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=jicofo --for condition=Ready --timeout=180s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=etherpad --for condition=Ready --timeout=180s
+          sudo kubectl -n prod wait pods -l app.kubernetes.io/component=jvb --for condition=Ready --timeout=300s
+
+      - name: Check
+        run: |
+          curl -vIL --cacert test/rootca.crt https://localhost
+          curl \
+            --include \
+            --no-buffer \
+            --header "Connection: Upgrade" \
+            --header "Upgrade: websocket" \
+            --header "Host: localhost:443" \
+            --header "Origin: https://localhost:443" \
+            --cacert test/rootca.crt \
+            https://localhost/xmpp-websocket?room=test |
+          grep 'It works! Now point your WebSocket client to this URL to connect to Prosody.'
+
+      - name: Tear down
+        run: sudo /usr/local/bin/k3s-uninstall.sh
+
+  e2e-test-custom-port:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Remove built-in kubectl
+        run: |
+          sudo rm $(which kubectl)
+      
+      - name: Install with custom port
+        run: |
+          sudo \
+            DEPLOY_GIT_REPO=${{github.event.pull_request.head.repo.clone_url}} \
+            DEPLOY_GIT_VERSION=${{github.head_ref}} \
+            PORT=7443 \
+            TLS_CERT=test/localhost.crt \
+            TLS_KEY=test/localhost.key \
+            ./deploy_jitsi.sh localhost
       
       - name: Wait for pods
         run: |
@@ -22,9 +85,21 @@ jobs:
           sudo kubectl -n prod wait pods -l app.kubernetes.io/component=etherpad --for condition=Ready --timeout=180s
           sudo kubectl -n prod wait pods -l app.kubernetes.io/component=jvb --for condition=Ready --timeout=300s
 
-      - name: Check homepage
+      - name: Check
         run: |
-          curl -vIL --cacert test/rootca.crt https://localhost
+          curl -vIL --cacert test/rootca.crt https://localhost:7443
+          curl \
+            --include \
+            --no-buffer \
+            --header "Connection: Upgrade" \
+            --header "Upgrade: websocket" \
+            --header "Host: localhost:7443" \
+            --header "Origin: https://localhost:7443" \
+            --cacert test/rootca.crt \
+            https://localhost:7443/xmpp-websocket?room=test |
+          grep 'It works! Now point your WebSocket client to this URL to connect to Prosody.'
+          curl http://localhost 2>&1 | grep "Connection refused"
+          curl https://localhost 2>&1 | grep "Connection refused"
 
       - name: Tear down
         run: sudo /usr/local/bin/k3s-uninstall.sh
@@ -42,7 +117,7 @@ jobs:
         with:
           version: v3.9.0
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
@@ -65,7 +140,7 @@ jobs:
       - name: Create k3s cluster
         uses: debianmaster/actions-k3s@master
         with:
-          version: 'v1.24.1+k3s1'
+          version: 'v1.24.1-k3s1'
         if: steps.list-changed.outputs.changed == 'true'
 
       - name: Wait for traefik
